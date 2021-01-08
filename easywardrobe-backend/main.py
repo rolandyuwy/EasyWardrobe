@@ -1,14 +1,7 @@
-import subprocess
 from datetime import datetime
-
-# Initializing elasticseach
-from elasticsearch import Elasticsearch
 
 from method import esMethod
 from method import shares
-
-# Connect to elasticseach
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
 # Flask Playground
 from flask import Flask, request, jsonify
@@ -23,40 +16,11 @@ bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 CORS(app)
 
-indices_arr = ["user", "asset", "watchlist", "rank"]
-# Create Database Indices upon first app launch
-for index in indices_arr:
-    try:
-        es.indices.create(index)
-        print("[" + index + "] indices created")
-    except:
-        if es.indices.exists(index):
-            print("[" + index + "] mapping already exists")
-        else:
-            print("Error - Failed to create indices")
-
-# Run Crawler
-subprocess.call("run_crawler.sh", shell=True)
-
-
 # Start up of the flask backend
 @app.route("/", methods=["GET", "POST"])
 def start_up():
     print("Backend up and running")
     return "Backend up and running"
-
-
-# Create indices with input string index, ?index={value}
-@app.route("/createIndices/<index>", methods=["POST"])
-def create_indices(index):
-    return esMethod.create_new_indices(client=es, index=index)
-
-
-# Delete indices with input string index, ?index={value}
-@app.route("/deleteIndices/<index>", methods=["POST"])
-def delete_indices(index):
-    return esMethod.delete_indices(client=es, index=index)
-
 
 # Register user
 @app.route('/register', methods=['POST'])
